@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getReceivedRequests, getSentRequests, updateRequestStatus } from '../services/api'
-import { FiInbox, FiSend, FiCheck, FiX, FiRotateCcw, FiMessageSquare } from 'react-icons/fi'
+import { FiInbox, FiSend, FiCheck, FiX, FiRotateCcw, FiMessageSquare, FiStar } from 'react-icons/fi'
+import ReviewFormModal from '../components/ReviewFormModal'
 
 const statusBadge = (status) => {
   const map = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected', returned: 'badge-returned' }
@@ -15,6 +16,7 @@ const Requests = () => {
   const [received, setReceived] = useState([])
   const [sent, setSent] = useState([])
   const [loading, setLoading] = useState(true)
+  const [reviewTarget, setReviewTarget] = useState(null) // { id, title }
 
   const fetchAll = async () => {
     setLoading(true)
@@ -92,6 +94,15 @@ const Requests = () => {
                 <FiRotateCcw size={13} /> Mark as Returned
               </button>
             )}
+
+            {!isOwner && (req.status === 'approved' || req.status === 'returned') && !req.reviewed && (
+              <button 
+                onClick={() => setReviewTarget({ id: req._id, title: req.itemId?.title })}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors shadow-sm"
+              >
+                <FiStar size={13} className="fill-current" /> Rate Experience
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -131,6 +142,15 @@ const Requests = () => {
           {current.map(req => <RequestCard key={req._id} req={req} isOwner={tab === 'received'} />)}
         </div>
       )}
+
+      {/* Review Modal */}
+      <ReviewFormModal
+        isOpen={!!reviewTarget}
+        onClose={() => setReviewTarget(null)}
+        requestId={reviewTarget?.id}
+        itemTitle={reviewTarget?.title}
+        onReviewSuccess={fetchAll}
+      />
     </div>
   )
 }

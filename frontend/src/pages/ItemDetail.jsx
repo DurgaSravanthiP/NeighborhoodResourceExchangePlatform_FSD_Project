@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { getItemById, createRequest } from '../services/api'
+import { getItemById, createRequest, getItemReviews } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { FiMapPin, FiUser, FiCalendar, FiMessageSquare, FiArrowLeft } from 'react-icons/fi'
+import { FiMapPin, FiUser, FiCalendar, FiMessageSquare, FiArrowLeft, FiStar } from 'react-icons/fi'
+import ReviewStars from '../components/ReviewStars'
 
 const categoryEmoji = {
   Tools: '🔧', Books: '📚', Electronics: '💻', Appliances: '🏠',
@@ -16,13 +17,17 @@ const ItemDetail = () => {
   const navigate = useNavigate()
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState([])
   const [message, setMessage] = useState('')
   const [requesting, setRequesting] = useState(false)
 
   useEffect(() => {
-    getItemById(id)
-      .then(({ data }) => setItem(data))
-      .catch(() => toast.error('Item not found'))
+    Promise.all([getItemById(id), getItemReviews(id)])
+      .then(([{ data: itemData }, { data: reviewData }]) => {
+        setItem(itemData)
+        setReviews(reviewData)
+      })
+      .catch(() => toast.error('Failed to load item details'))
       .finally(() => setLoading(false))
   }, [id])
 
@@ -77,9 +82,20 @@ const ItemDetail = () => {
         <div>
           <div className="flex items-start justify-between gap-3 mb-3">
             <h1 className="font-display text-3xl font-bold text-earth-800">{item.title}</h1>
-            <span className={item.availabilityStatus === 'available' ? 'badge-available' : 'badge-borrowed'}>
-              {item.availabilityStatus === 'available' ? '✓ Available' : '● Borrowed'}
-            </span>
+            <div className="flex flex-col items-end gap-1">
+              <span className={item.availabilityStatus === 'available' ? 'badge-available' : 'badge-borrowed'}>
+                {item.availabilityStatus === 'available' ? '✓ Available' : '● Borrowed'}
+              </span>
+              {reviews.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-1 bg-amber-50 px-2.5 py-1 rounded-lg">
+                  <FiStar className="text-amber-500 fill-current" size={14} />
+                  <span className="text-sm font-bold text-amber-700">
+                    {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}
+                  </span>
+                  <span className="text-xs text-amber-500 font-medium">({reviews.length})</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <span className="inline-block bg-earth-100 text-earth-600 text-xs px-3 py-1 rounded-full mb-4">
@@ -145,6 +161,46 @@ const ItemDetail = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mt-16 pt-8 border-t border-earth-100">
+        <h2 className="font-display text-2xl font-bold text-earth-800 mb-8 flex items-center gap-3">
+          Community Feedback 
+          <span className="text-sm font-normal text-earth-400 bg-earth-50 px-3 py-1 rounded-full">{reviews.length} reviews</span>
+        </h2>
+
+        {reviews.length === 0 ? (
+          <div className="bg-earth-50 rounded-3xl p-12 text-center">
+            <p className="text-earth-400 font-medium italic">No reviews yet. Be the first to borrow and share your feedback!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {reviews.map((review) => (
+              <div key={review._id} className="bg-white border border-earth-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold overflow-hidden">
+                      {review.reviewerId?.profileImage ? (
+                        <img src={review.reviewerId.profileImage} alt={review.reviewerId.name} className="w-full h-full object-cover" />
+                      ) : (
+                        review.reviewerId?.name?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-earth-800">{review.reviewerId?.name}</p>
+                      <p className="text-xs text-earth-400 font-medium uppercase tracking-wider mt-0.5">
+                        {new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <ReviewStars rating={review.rating} size={16} />
+                </div>
+                <p className="text-earth-600 leading-relaxed italic">"{review.comment}"</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

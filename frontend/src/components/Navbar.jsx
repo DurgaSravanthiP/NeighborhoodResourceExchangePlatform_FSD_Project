@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FiHome, FiGrid, FiPlus, FiMessageSquare, FiUser, FiLogOut, FiBell, FiPackage, FiMenu, FiX } from 'react-icons/fi'
 import { useState } from 'react'
+import NotificationBell from './NotificationBell'
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -49,6 +50,11 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            
+            <div className="mx-2 h-6 w-px bg-gray-200"></div>
+            
+            <NotificationBell />
+
             <button onClick={logout}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition-all ml-2">
               <FiLogOut size={15} /> Logout

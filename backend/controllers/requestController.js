@@ -1,6 +1,7 @@
 const BorrowRequest = require('../models/BorrowRequest');
 const Item = require('../models/Item');
 const Message = require('../models/Message');
+const { createNotification } = require('./notificationController');
 
 // @POST /api/requests
 const createRequest = async (req, res) => {
@@ -34,6 +35,15 @@ const createRequest = async (req, res) => {
 
     await request.populate(['itemId', 'borrowerId', 'ownerId']);
     res.status(201).json(request);
+
+    // Trigger Notification
+    await createNotification(req.app, {
+      recipient: item.ownerId,
+      sender: req.user._id,
+      type: 'REQUEST_NEW',
+      message: `${req.user.name} wants to borrow your ${item.title}`,
+      link: '/requests'
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -84,6 +94,22 @@ const updateRequestStatus = async (req, res) => {
       await Item.findByIdAndUpdate(request.itemId, { availabilityStatus: 'available' });
     }
     res.json(request);
+
+    // Trigger Notification for borrower
+    let msg = '';
+    if (status === 'approved') msg = `Your request for ${request.itemId.title} was approved! 🎉`;
+    else if (status === 'rejected') msg = `Your request for ${request.itemId.title} was declined.`;
+    else if (status === 'returned') msg = `Your ${request.itemId.title} has been marked as returned.`;
+
+    if (msg) {
+      await createNotification(req.app, {
+        recipient: request.borrowerId,
+        sender: req.user._id,
+        type: 'REQUEST_STATUS',
+        message: msg,
+        link: '/requests'
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

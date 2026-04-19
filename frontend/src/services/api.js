@@ -37,4 +37,13 @@ export const getConversations = () => API.get('/messages/conversations')
 export const getMessages = (userId) => API.get(`/messages/${userId}`)
 export const sendMessage = (data) => API.post('/messages', data)
 
+// Reviews
+export const createReview = (data) => API.post('/reviews', data)
+export const getItemReviews = (itemId) => API.get(`/reviews/item/${itemId}`)
+export const getUserReviews = (userId) => API.get(`/reviews/user/${userId}`)
+
+// Notifications
+export const getNotifications = () => API.get('/notifications')
+export const markNotificationRead = (id) => API.put(`/notifications/${id}/read`)
+
 export default API

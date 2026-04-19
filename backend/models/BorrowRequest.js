@@ -12,6 +12,7 @@ const borrowRequestSchema = new mongoose.Schema({
   message: { type: String, default: '' },
   requestDate: { type: Date, default: Date.now },
   returnDate: { type: Date },
+  reviewed: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('BorrowRequest', borrowRequestSchema);

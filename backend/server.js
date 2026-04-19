@@ -11,6 +11,12 @@ const io = new Server(server, {
   cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
 });
 
+const onlineUsers = new Map();
+
+// Make io accessible to controllers
+app.set('io', io);
+app.set('onlineUsers', onlineUsers);
+
 // Connect DB
 connectDB();
 
@@ -24,11 +30,12 @@ app.use('/api/items', require('./routes/items'));
 app.use('/api/requests', require('./routes/requests'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 app.get('/', (req, res) => res.json({ message: '🏘️ Neighbourhood API Running' }));
 
 // Socket.io — Real-time chat
-const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
   console.log('🔌 User connected:', socket.id);

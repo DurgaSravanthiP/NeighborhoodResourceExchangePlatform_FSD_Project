@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
+import { useEffect } from 'react'
+import { toast } from 'react-toastify'
+import socket from './services/socket'
 
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -17,6 +20,18 @@ import Profile from './pages/Profile'
 
 const AppRoutes = () => {
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      socket.on('newNotification', (data) => {
+        toast.info(data.message, {
+          icon: '🔔',
+          position: "bottom-right"
+        });
+      });
+    }
+    return () => socket.off('newNotification');
+  }, [user]);
 
   return (
     <>

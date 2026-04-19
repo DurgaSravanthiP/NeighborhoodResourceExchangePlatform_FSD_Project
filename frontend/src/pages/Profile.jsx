@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { useAuth } from '../context/AuthContext'
-import { updateProfile } from '../services/api'
-import { FiUser, FiMail, FiMapPin, FiEdit3, FiSave, FiX, FiFileText } from 'react-icons/fi'
+import { updateProfile, getUserReviews } from '../services/api'
+import { FiUser, FiMail, FiMapPin, FiEdit3, FiSave, FiX, FiFileText, FiStar } from 'react-icons/fi'
+import ReviewStars from '../components/ReviewStars'
+import { useEffect } from 'react'
 
 const Profile = () => {
   const { user, updateUser } = useAuth()
@@ -14,6 +16,17 @@ const Profile = () => {
     password: '',
   })
   const [loading, setLoading] = useState(false)
+  const [reviews, setReviews] = useState([])
+  const [fetchingReviews, setFetchingReviews] = useState(true)
+
+  useEffect(() => {
+    if (user?._id) {
+      getUserReviews(user._id)
+        .then(({ data }) => setReviews(data))
+        .catch(() => console.error('Failed to load reviews'))
+        .finally(() => setFetchingReviews(false))
+    }
+  }, [user?._id])
 
   const handleSave = async () => {
     setLoading(true)
@@ -137,6 +150,56 @@ const Profile = () => {
             </>
           )}
         </div>
+      </div>
+
+      {/* Trust & Reviews Section */}
+      <div className="mt-12">
+        <h2 className="font-display text-2xl font-bold text-earth-800 mb-6 flex items-center gap-3">
+          Trust & Community Feedback
+          {reviews.length > 0 && (
+            <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+              <FiStar className="text-amber-500 fill-current" size={14} />
+              <span className="text-sm font-bold text-amber-700">
+                {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}
+              </span>
+            </div>
+          )}
+        </h2>
+
+        {fetchingReviews ? (
+          <div className="flex justify-center p-12">
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="card bg-earth-50 p-10 text-center border-dashed border-2 border-earth-200 shadow-none">
+            <p className="text-earth-400 italic">No reviews received yet. Share more items to build your community reputation!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <div key={review._id} className="card p-6 bg-white border border-earth-100">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold overflow-hidden text-sm">
+                      {review.reviewerId?.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-earth-800 text-sm">{review.reviewerId?.name}</p>
+                      <p className="text-[10px] text-earth-400 font-bold uppercase tracking-widest">
+                        Borrowed: <span className="text-emerald-600">{review.itemId?.title}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <ReviewStars rating={review.rating} size={14} />
+                </div>
+                <p className="text-earth-600 text-sm leading-relaxed">"{review.comment}"</p>
+                <p className="text-[10px] text-earth-400 mt-3 font-medium">
+                  {new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

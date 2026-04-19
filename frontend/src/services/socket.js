@@ -33,4 +33,6 @@ export const emitTyping = (data) => socket.emit('typing', data)
 export const onTyping = (cb) => { socket.off('typing'); socket.on('typing', cb) }
 export const offTyping = () => socket.off('typing')
 
+export const getSocket = () => socket
+
 export default socket

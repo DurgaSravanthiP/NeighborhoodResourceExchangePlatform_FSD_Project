@@ -3,13 +3,19 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const Message = require('./models/Message');
+const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 const io = new Server(server, {
-  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
+  cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 });
 
 const onlineUsers = new Map();
@@ -22,7 +28,7 @@ app.set('onlineUsers', onlineUsers);
 connectDB();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Routes
@@ -34,7 +40,16 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/notifications', require('./routes/notifications'));
 
-app.get('/', (req, res) => res.json({ message: '🏘️ Neighbourhood API Running' }));
+// Serve React frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../frontend/dist');
+  app.use(express.static(frontendPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => res.json({ message: '🏘️ Neighbourhood API Running' }));
+}
 
 // Socket.io — Real-time chat
 

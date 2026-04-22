@@ -9,12 +9,12 @@ const heroImages = [
 ]
 
 const itemShowcase = [
-  { img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&q=80', label: 'Power Drill', tag: 'Tools', color: 'bg-orange-100 text-orange-600' },
-  { img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80', label: 'Books', tag: 'Books', color: 'bg-blue-100 text-blue-600' },
-  { img: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&q=80', label: 'Camping Gear', tag: 'Sports', color: 'bg-green-100 text-green-600' },
-  { img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80', label: 'Kitchen Mixer', tag: 'Kitchen', color: 'bg-pink-100 text-pink-600' },
-  { img: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=80', label: 'Laptop', tag: 'Electronics', color: 'bg-purple-100 text-purple-600' },
-  { img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80', label: 'Garden Tools', tag: 'Garden', color: 'bg-lime-100 text-lime-600' },
+  { img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80', label: 'Fiction Books', tag: 'Books', color: 'bg-blue-100 text-blue-600' },
+  { img: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&q=80', label: 'Winter Jacket', tag: 'Clothing', color: 'bg-rose-100 text-rose-600' },
+  { img: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=80', label: 'Acoustic Guitar', tag: 'Hobbies', color: 'bg-amber-100 text-amber-600' },
+  { img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80', label: 'Vintage Camera', tag: 'Electronics', color: 'bg-purple-100 text-purple-600' },
+  { img: 'https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=400&q=80', label: 'Stand Mixer', tag: 'Kitchen', color: 'bg-pink-100 text-pink-600' },
+  { img: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&q=80', label: 'Indoor Plant', tag: 'Garden', color: 'bg-lime-100 text-lime-600' },
 ]
 
 const steps = [
@@ -185,13 +185,13 @@ const Home = () => {
           {/* Images */}
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
-              <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&q=80"
+              <img src="https://i.pinimg.com/1200x/67/97/61/679761d400154889c89c86a8f2a6560f.jpg"
                 className="rounded-3xl object-cover h-52 w-full shadow-md" alt="neighbours" />
-              <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=400&q=80"
+              <img src="https://i.pinimg.com/1200x/33/0e/52/330e52e06d1e3e0d7aaa418df3a63def.jpg"
                 className="rounded-3xl object-cover h-52 w-full shadow-md mt-8" alt="handshake" />
-              <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=400&q=80"
+              <img src="https://i.pinimg.com/736x/74/48/6d/74486d9ca0563761b58332487d448565.jpg"
                 className="rounded-3xl object-cover h-52 w-full shadow-md -mt-4" alt="food" />
-              <img src="https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?w=400&q=80"
+              <img src="https://i.pinimg.com/736x/b9/79/d8/b979d8274e1fe67ba018093063cfcda8.jpg"
                 className="rounded-3xl object-cover h-52 w-full shadow-md mt-4" alt="laptop" />
             </div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white text-2xl shadow-xl">

@@ -54,3 +54,9 @@
 ::-webkit-scrollbar-thumb { background: #6ee7b7; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #10b981; }
 
+/* Hide default browser password reveal icon (Edge/IE) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+

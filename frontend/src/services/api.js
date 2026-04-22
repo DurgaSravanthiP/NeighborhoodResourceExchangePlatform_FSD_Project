@@ -4,7 +4,7 @@ const API = axios.create({ baseURL: '/api' })
 
 // Attach token from storage on every request
 API.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem('neighbourUser') || 'null')
+  const user = JSON.parse(sessionStorage.getItem('neighbourUser') || 'null')
   if (user?.token) config.headers.Authorization = `Bearer ${user.token}`
   return config
 })

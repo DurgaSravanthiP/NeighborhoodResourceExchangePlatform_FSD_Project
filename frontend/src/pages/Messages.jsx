@@ -3,7 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getConversations, getMessages, sendMessage } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { onReceiveMessage, offReceiveMessage, sendSocketMessage, emitTyping, onTyping, offTyping } from '../services/socket'
+import { 
+  onReceiveMessage, offReceiveMessage, 
+  sendSocketMessage, 
+  emitTyping, onTyping, offTyping,
+  emitMarkDelivered, emitMarkSeen,
+  onMessageStatus, offMessageStatus,
+  onMessagesSeen, offMessagesSeen
+} from '../services/socket'
 import { FiSend, FiMessageSquare, FiArrowLeft, FiSearch } from 'react-icons/fi'
 
 const Messages = () => {
@@ -14,12 +21,15 @@ const Messages = () => {
   const [conversations, setConversations] = useState([])
   const [messages, setMessages] = useState([])
   const [activeUser, setActiveUser] = useState(null)
+  const [typingUsers, setTypingUsers] = useState({})
   const [text, setText] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [sending, setSending] = useState(false)
   const [typingMsg, setTypingMsg] = useState('')
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const messagesEndRef = useRef(null)
   const typingTimeout = useRef(null)
+  const typingTimeouts = useRef({})
   const activeUserRef = useRef(null)
 
   // Keep ref in sync so socket callbacks can access latest activeUser
@@ -73,23 +83,58 @@ const Messages = () => {
       const receiverId = msg.receiverId?._id || msg.receiverId
       if (au && (senderId === au._id || receiverId === au._id)) {
         setMessages(prev => {
-          // prevent duplicates
           if (prev.find(m => m._id && m._id === msg._id)) return prev
           return [...prev, msg]
         })
+        if (senderId !== user._id) {
+          emitMarkSeen({ senderId, receiverId: user._id })
+        }
+      } else {
+        if (senderId !== user._id) {
+          emitMarkDelivered({ messageId: msg._id, senderId })
+          setConversations(prev => prev.map(c => 
+            c.user._id === senderId 
+              ? { ...c, unreadCount: (c.unreadCount || 0) + 1, lastMessage: msg.message }
+              : c
+          ))
+        }
       }
       loadConversations()
     })
 
-    onTyping(({ senderName }) => {
-      if (activeUserRef.current) {
+    onTyping(({ senderName, senderId }) => {
+      if (activeUserRef.current && activeUserRef.current._id === senderId) {
         setTypingMsg(`${senderName} is typing...`)
         clearTimeout(typingTimeout.current)
         typingTimeout.current = setTimeout(() => setTypingMsg(''), 2500)
       }
+      setTypingUsers(prev => ({ ...prev, [senderId]: true }))
+      clearTimeout(typingTimeouts.current[senderId])
+      typingTimeouts.current[senderId] = setTimeout(() => {
+        setTypingUsers(prev => ({ ...prev, [senderId]: false }))
+      }, 2500)
     })
 
-    return () => { offReceiveMessage(); offTyping() }
+    onMessageStatus(({ messageId, status }) => {
+      setMessages(prev => prev.map(m => m._id === messageId ? { ...m, status } : m))
+      loadConversations()
+    })
+
+    onMessagesSeen(({ receiverId }) => {
+      setMessages(prev => prev.map(m => 
+        (m.receiverId?._id || m.receiverId) === receiverId && m.status !== 'seen' 
+          ? { ...m, status: 'seen' } 
+          : m
+      ))
+      loadConversations()
+    })
+
+    return () => { 
+      offReceiveMessage()
+      offTyping()
+      offMessageStatus()
+      offMessagesSeen()
+    }
   }, [loadConversations])
 
   // Scroll to bottom when messages change
@@ -121,7 +166,7 @@ const Messages = () => {
 
   const handleTyping = (e) => {
     setText(e.target.value)
-    if (activeUser) emitTyping({ receiverId: activeUser._id, senderName: user.name })
+    if (activeUser) emitTyping({ receiverId: activeUser._id, senderName: user.name, senderId: user._id })
   }
 
   const handleKeyDown = (e) => {
@@ -131,6 +176,8 @@ const Messages = () => {
   const openConversation = (u) => {
     setActiveUser(u)
     setMessages([])
+    emitMarkSeen({ senderId: u._id, receiverId: user._id })
+    setConversations(prev => prev.map(c => c.user._id === u._id ? { ...c, unreadCount: 0 } : c))
     navigate(`/messages/${u._id}`)
   }
 
@@ -141,11 +188,22 @@ const Messages = () => {
 
   const getSenderId = (msg) => msg.senderId?._id || msg.senderId
 
+  const filteredConversations = conversations.filter(c => 
+    c.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
+
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
       {/* Page title bar */}
-      <div className="px-4 py-3 bg-white border-b border-gray-100 shrink-0">
+      <div className="px-4 py-3 bg-white border-b border-gray-100 shrink-0 flex items-center gap-2">
         <h1 className="font-display text-xl font-bold text-gray-800">💬 Messages</h1>
+        {totalUnread > 0 && (
+          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-bounce">
+            {totalUnread} New
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -158,7 +216,9 @@ const Messages = () => {
             <div className="relative">
               <FiSearch className="absolute left-3 top-2.5 text-gray-400" size={14} />
               <input className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="Search conversations..." readOnly />
+                placeholder="Search conversations..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
 
@@ -171,7 +231,18 @@ const Messages = () => {
                 <p className="font-semibold text-gray-600 text-sm">No conversations yet</p>
                 <p className="text-gray-400 text-xs mt-1">Send a borrow request to start chatting</p>
               </div>
-            ) : conversations.map(({ user: u, lastMessage, timestamp }) => (
+            ) : filteredConversations.length === 0 && searchQuery ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                  <FiSearch size={28} className="text-gray-400" />
+                </div>
+                <p className="font-semibold text-gray-600 text-sm">Not available</p>
+                <p className="text-gray-400 text-xs mt-1">No user matches "{searchQuery}"</p>
+              </div>
+            ) : filteredConversations.map((conv) => {
+              const u = conv.user;
+              const { lastMessage, timestamp, unreadCount, lastMessageStatus, lastMessageSender } = conv;
+              return (
               <button key={u._id}
                 onClick={() => openConversation(u)}
                 className={`w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-left border-b border-gray-50
@@ -184,12 +255,30 @@ const Messages = () => {
                     <p className={`text-sm font-semibold truncate ${activeUser?._id === u._id ? 'text-emerald-700' : 'text-gray-800'}`}>
                       {u.name}
                     </p>
-                    <p className="text-gray-400 text-xs shrink-0 ml-2">{formatTime(timestamp)}</p>
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      {unreadCount > 0 && (
+                        <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                          {unreadCount}
+                        </span>
+                      )}
+                      <p className="text-gray-400 text-xs">{formatTime(timestamp)}</p>
+                    </div>
                   </div>
-                  <p className="text-gray-400 text-xs truncate mt-0.5">{lastMessage || 'Start a conversation'}</p>
+                  {typingUsers[u._id] ? (
+                    <p className="text-emerald-500 text-xs mt-0.5 animate-pulse font-medium">Typing...</p>
+                  ) : (
+                    <p className="text-gray-400 text-xs truncate mt-0.5">
+                      {lastMessageStatus && lastMessageSender === user._id && (
+                         <span className="text-emerald-500 font-bold mr-1">
+                           {lastMessageStatus === 'seen' ? '✓✓' : lastMessageStatus === 'delivered' ? '✓✓' : '✓'}
+                         </span>
+                      )}
+                      {lastMessage || 'Start a conversation'}
+                    </p>
+                  )}
                 </div>
               </button>
-            ))}
+            )})}
           </div>
         </div>
 
@@ -263,8 +352,13 @@ const Messages = () => {
                                   : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'}`}>
                                 <p className="leading-relaxed break-words">{msg.message}</p>
                               </div>
-                              <p className={`text-xs mt-1 ${isMine ? 'text-right text-gray-400' : 'text-gray-400'}`}>
+                              <p className={`text-xs mt-1 flex gap-1 ${isMine ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
                                 {formatTime(msg.timestamp || msg.createdAt)}
+                                {isMine && (
+                                  <span className="text-[10px] uppercase font-bold text-emerald-500">
+                                    {msg.status === 'seen' ? '✓✓ Seen' : msg.status === 'delivered' ? '✓✓ Delivered' : '✓ Sent'}
+                                  </span>
+                                )}
                               </p>
                             </div>
                           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiBell, FiCheckCircle, FiStar } from 'react-icons/fi'
+import { FiBell, FiCheckCircle, FiStar, FiMessageSquare } from 'react-icons/fi'
 import { getNotifications, markNotificationRead } from '../services/api'
 import { getSocket } from '../services/socket'
 
@@ -96,6 +96,7 @@ const NotificationBell = () => {
                     ${!n.isRead ? 'bg-primary-100 text-primary-600' : 'bg-earth-100 text-earth-400'}`}>
                     {n.type === 'REQUEST_NEW' ? <FiBell size={18} /> : 
                      n.type === 'REQUEST_STATUS' ? <FiCheckCircle size={18} /> : 
+                     n.type === 'MESSAGE_NEW' ? <FiMessageSquare size={18} /> :
                      <FiStar size={18} />}
                   </div>
                   <div>

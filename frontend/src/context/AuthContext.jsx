@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const stored = localStorage.getItem('neighbourUser')
+    const stored = sessionStorage.getItem('neighbourUser')
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         // Reconnect socket on page refresh
         connectSocket(parsed._id)
       } catch {
-        localStorage.removeItem('neighbourUser')
+        sessionStorage.removeItem('neighbourUser')
       }
     }
     setLoading(false)
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData)
-    localStorage.setItem('neighbourUser', JSON.stringify(userData))
+    sessionStorage.setItem('neighbourUser', JSON.stringify(userData))
     axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`
     connectSocket(userData._id)
   }
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     disconnectSocket()
     setUser(null)
-    localStorage.removeItem('neighbourUser')
+    sessionStorage.removeItem('neighbourUser')
     delete axios.defaults.headers.common['Authorization']
     // Force redirect to landing page
     window.location.href = '/'
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (userData) => {
     const updated = { ...user, ...userData }
     setUser(updated)
-    localStorage.setItem('neighbourUser', JSON.stringify(updated))
+    sessionStorage.setItem('neighbourUser', JSON.stringify(updated))
   }
 
   return (

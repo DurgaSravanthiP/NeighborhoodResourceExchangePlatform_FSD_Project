@@ -1,4 +1,5 @@
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 // @GET /api/messages/:userId  — get conversation with a specific user
 const getMessages = async (req, res) => {
@@ -27,6 +28,23 @@ const sendMessage = async (req, res) => {
       senderId: req.user._id, receiverId, message, requestId,
     });
     await msg.populate(['senderId', 'receiverId']);
+
+    // Create Notification
+    const notification = await Notification.create({
+      recipient: receiverId,
+      sender: req.user._id,
+      type: 'MESSAGE_NEW',
+      message: `${req.user.name} sent you a new message`,
+      link: `/messages/${req.user._id}`
+    });
+
+    const io = req.app.get('io');
+    const onlineUsers = req.app.get('onlineUsers');
+    const receiverSocket = onlineUsers.get(receiverId);
+    if (receiverSocket) {
+      io.to(receiverSocket).emit('newNotification', notification);
+    }
+
     res.status(201).json(msg);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -42,16 +60,34 @@ const getConversations = async (req, res) => {
       .sort('-timestamp');
 
     const seen = new Set();
-    const conversations = [];
+    const conversationsMap = new Map();
     for (const msg of messages) {
       if (!msg.senderId || !msg.receiverId) continue;
       const other = msg.senderId._id.toString() === req.user._id.toString()
         ? msg.receiverId : msg.senderId;
       if (!seen.has(other._id.toString())) {
         seen.add(other._id.toString());
-        conversations.push({ user: other, lastMessage: msg.message, timestamp: msg.timestamp });
+        conversationsMap.set(other._id.toString(), {
+          user: other,
+          lastMessage: msg.message,
+          timestamp: msg.timestamp,
+          lastMessageStatus: msg.status,
+          lastMessageSender: msg.senderId._id.toString()
+        });
       }
     }
+
+    // Get unread counts
+    const conversations = [];
+    for (const [otherId, conv] of conversationsMap.entries()) {
+      const unreadCount = await Message.countDocuments({
+        senderId: otherId,
+        receiverId: req.user._id,
+        status: { $ne: 'seen' }
+      });
+      conversations.push({ ...conv, unreadCount });
+    }
+
     res.json(conversations);
   } catch (error) {
     res.status(500).json({ message: error.message });

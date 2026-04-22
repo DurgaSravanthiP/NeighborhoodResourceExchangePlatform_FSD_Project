@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const Message = require('./models/Message');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
@@ -52,9 +53,28 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('typing', ({ receiverId, senderName }) => {
+  socket.on('typing', ({ receiverId, senderName, senderId }) => {
     const receiverSocket = onlineUsers.get(receiverId);
-    if (receiverSocket) io.to(receiverSocket).emit('typing', { senderName });
+    if (receiverSocket) io.to(receiverSocket).emit('typing', { senderName, senderId });
+  });
+
+  socket.on('markDelivered', async ({ messageId, senderId }) => {
+    try {
+      await Message.findByIdAndUpdate(messageId, { status: 'delivered' });
+      const senderSocket = onlineUsers.get(senderId);
+      if (senderSocket) io.to(senderSocket).emit('messageStatus', { messageId, status: 'delivered' });
+    } catch (err) {}
+  });
+
+  socket.on('markSeen', async ({ senderId, receiverId }) => {
+    try {
+      await Message.updateMany(
+        { senderId, receiverId, status: { $ne: 'seen' } }, 
+        { status: 'seen' }
+      );
+      const senderSocket = onlineUsers.get(senderId);
+      if (senderSocket) io.to(senderSocket).emit('messagesSeen', { receiverId });
+    } catch (err) {}
   });
 
   socket.on('disconnect', () => {

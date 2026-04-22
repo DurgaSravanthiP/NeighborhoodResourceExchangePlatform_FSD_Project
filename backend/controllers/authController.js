@@ -7,7 +7,7 @@ const generateToken = (id) =>
 // @POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password, location } = req.body;
+    const { name, email, password, location, profileImage } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'Please provide all required fields' });
 
@@ -15,7 +15,7 @@ const register = async (req, res) => {
     if (userExists)
       return res.status(400).json({ message: 'User already exists with this email' });
 
-    const user = await User.create({ name, email, password, location });
+    const user = await User.create({ name, email, password, location, profileImage });
     res.status(201).json({
       _id: user._id, name: user.name, email: user.email,
       location: user.location, profileImage: user.profileImage,
@@ -59,12 +59,13 @@ const updateProfile = async (req, res) => {
     user.name = req.body.name || user.name;
     user.location = req.body.location || user.location;
     user.bio = req.body.bio || user.bio;
+    if (req.body.profileImage) user.profileImage = req.body.profileImage;
     if (req.body.password) user.password = req.body.password;
 
     const updated = await user.save();
     res.json({
       _id: updated._id, name: updated.name, email: updated.email,
-      location: updated.location, bio: updated.bio,
+      location: updated.location, bio: updated.bio, profileImage: updated.profileImage,
       token: generateToken(updated._id),
     });
   } catch (error) {

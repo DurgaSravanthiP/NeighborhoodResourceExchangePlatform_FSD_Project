@@ -161,17 +161,17 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map(({ num, icon, title, desc }, i) => (
-              <div key={num} className="relative">
+              <div key={num} className="relative group cursor-pointer">
                 {i < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-[60%] w-full h-0.5 bg-emerald-200 z-0" />
+                  <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-emerald-200 z-0 group-hover:bg-emerald-400 transition-colors duration-300" />
                 )}
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center text-3xl mb-4 border border-emerald-100">
+                <div className="relative z-10 flex flex-col items-center text-center p-4 rounded-3xl transition-all duration-300 hover:bg-white hover:shadow-xl hover:-translate-y-2 border border-transparent hover:border-emerald-100">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center text-3xl mb-4 border border-emerald-100 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-emerald-50 transition-all duration-300">
                     {icon}
                   </div>
-                  <span className="text-xs font-black text-emerald-400 tracking-widest mb-1">{num}</span>
+                  <span className="text-xs font-black text-emerald-400 tracking-widest mb-1 group-hover:text-emerald-600 transition-colors">{num}</span>
                   <h3 className="font-display font-bold text-gray-800 text-lg mb-2">{title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                  <p className="text-gray-500 text-sm leading-relaxed group-hover:text-gray-700 transition-colors">{desc}</p>
                 </div>
               </div>
             ))}

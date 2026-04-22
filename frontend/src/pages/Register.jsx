@@ -6,7 +6,7 @@ import { registerUser } from '../services/api'
 import { FiUser, FiMail, FiLock, FiMapPin, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi'
 
 const Register = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '', location: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', location: '', profileImage: '' })
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -91,6 +91,17 @@ const Register = () => {
                   <FiMapPin className="absolute left-3.5 top-3.5 text-gray-400" />
                   <input type="text" className={inputCls} placeholder="e.g. Banjara Hills, Hyderabad"
                     value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
+                </div>
+              </div>
+              {/* Profile Image */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Profile Image URL <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <div className="relative">
+                  <FiUser className="absolute left-3.5 top-3.5 text-gray-400" />
+                  <input type="url" className={inputCls} placeholder="https://example.com/avatar.jpg"
+                    value={form.profileImage} onChange={e => setForm({ ...form, profileImage: e.target.value })} />
                 </div>
               </div>
               {/* Password */}

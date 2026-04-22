@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { useAuth } from '../context/AuthContext'
-import { updateProfile, getUserReviews } from '../services/api'
-import { FiUser, FiMail, FiMapPin, FiEdit3, FiSave, FiX, FiFileText, FiStar } from 'react-icons/fi'
+import { updateProfile, getUserReviews, uploadImage } from '../services/api'
+import { FiUser, FiMail, FiMapPin, FiEdit3, FiSave, FiX, FiFileText, FiStar, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import ReviewStars from '../components/ReviewStars'
 import { useEffect } from 'react'
 
@@ -13,8 +13,10 @@ const Profile = () => {
     name: user?.name || '',
     location: user?.location || '',
     bio: user?.bio || '',
+    profileImage: user?.profileImage || '',
     password: '',
   })
+  const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const [reviews, setReviews] = useState([])
   const [fetchingReviews, setFetchingReviews] = useState(true)
@@ -31,7 +33,7 @@ const Profile = () => {
   const handleSave = async () => {
     setLoading(true)
     try {
-      const payload = { name: form.name, location: form.location, bio: form.bio }
+      const payload = { name: form.name, location: form.location, bio: form.bio, profileImage: form.profileImage }
       if (form.password) payload.password = form.password
       const { data } = await updateProfile(payload)
       updateUser(data)
@@ -42,6 +44,20 @@ const Profile = () => {
       toast.error(err.response?.data?.message || 'Update failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('image', file)
+    try {
+      const { data } = await uploadImage(formData)
+      setForm(f => ({ ...f, profileImage: data.imageUrl }))
+      toast.success('Image uploaded successfully!')
+    } catch (err) {
+      toast.error('Failed to upload image')
     }
   }
 
@@ -56,8 +72,12 @@ const Profile = () => {
         <div className="h-28 bg-gradient-to-r from-primary-600 to-primary-400 relative">
           <div className="absolute -bottom-8 left-8">
             <div className="w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-lg
-              flex items-center justify-center text-2xl font-bold text-primary-600 font-display">
-              {avatar}
+              flex items-center justify-center text-2xl font-bold text-primary-600 font-display overflow-hidden">
+              {user?.profileImage ? (
+                <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                avatar
+              )}
             </div>
           </div>
         </div>
@@ -116,6 +136,34 @@ const Profile = () => {
                 ))}
 
                 <div>
+                  <label className="block text-sm font-medium text-earth-700 mb-1.5">Profile Image</label>
+                  <div className="flex gap-4 items-center">
+                    {form.profileImage ? (
+                      <img src={form.profileImage} alt="Profile" className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                        <FiUser />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <div className="relative">
+                        <FiUser className="absolute left-3.5 top-3.5 text-earth-400" />
+                        <input type="url" className="input-field pl-10"
+                          placeholder="Image URL (e.g. from Unsplash)"
+                          value={form.profileImage}
+                          onChange={e => setForm({ ...form, profileImage: e.target.value })} />
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Or <label className="text-emerald-600 font-semibold cursor-pointer hover:underline">
+                          upload a file
+                          <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-earth-700 mb-1.5">Bio</label>
                   <div className="relative">
                     <FiFileText className="absolute left-3.5 top-3.5 text-earth-400" />
@@ -130,10 +178,17 @@ const Profile = () => {
                   <label className="block text-sm font-medium text-earth-700 mb-1.5">
                     New Password <span className="text-earth-400 font-normal">(leave blank to keep current)</span>
                   </label>
-                  <input type="password" className="input-field"
-                    placeholder="New password (min. 6 chars)"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })} />
+                  <div className="relative">
+                    <FiLock className="absolute left-3.5 top-3.5 text-earth-400" />
+                    <input type={showPw ? 'text' : 'password'} className="input-field pl-10 pr-10"
+                      placeholder="New password (min. 6 chars)"
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })} />
+                    <button type="button" onClick={() => setShowPw(!showPw)}
+                      className="absolute right-3.5 top-3.5 text-earth-400 hover:text-earth-600 transition-colors">
+                      {showPw ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">

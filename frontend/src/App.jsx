@@ -17,6 +17,8 @@ import MyItems from './pages/MyItems'
 import Requests from './pages/Requests'
 import Messages from './pages/Messages'
 import Profile from './pages/Profile'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminRoute from './components/AdminRoute'
 
 const AppRoutes = () => {
   const { user } = useAuth()
@@ -53,6 +55,7 @@ const AppRoutes = () => {
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/messages/:userId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />

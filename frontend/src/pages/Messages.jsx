@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getConversations, getMessages, sendMessage } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { 
-  onReceiveMessage, offReceiveMessage, 
-  sendSocketMessage, 
+import {
+  onReceiveMessage, offReceiveMessage,
+  sendSocketMessage,
   emitTyping, onTyping, offTyping,
   emitMarkDelivered, emitMarkSeen,
   onMessageStatus, offMessageStatus,
@@ -71,7 +71,7 @@ const Messages = () => {
             const other = data[0].senderId?._id === user._id ? data[0].receiverId : data[0].senderId
             if (other?._id) { setActiveUser(other); setMessages(data) }
           }
-        }).catch(() => {})
+        }).catch(() => { })
     }
   }, [userId, conversations])
 
@@ -92,8 +92,8 @@ const Messages = () => {
       } else {
         if (senderId !== user._id) {
           emitMarkDelivered({ messageId: msg._id, senderId })
-          setConversations(prev => prev.map(c => 
-            c.user._id === senderId 
+          setConversations(prev => prev.map(c =>
+            c.user._id === senderId
               ? { ...c, unreadCount: (c.unreadCount || 0) + 1, lastMessage: msg.message }
               : c
           ))
@@ -121,15 +121,15 @@ const Messages = () => {
     })
 
     onMessagesSeen(({ receiverId }) => {
-      setMessages(prev => prev.map(m => 
-        (m.receiverId?._id || m.receiverId) === receiverId && m.status !== 'seen' 
-          ? { ...m, status: 'seen' } 
+      setMessages(prev => prev.map(m =>
+        (m.receiverId?._id || m.receiverId) === receiverId && m.status !== 'seen'
+          ? { ...m, status: 'seen' }
           : m
       ))
       loadConversations()
     })
 
-    return () => { 
+    return () => {
       offReceiveMessage()
       offTyping()
       offMessageStatus()
@@ -188,7 +188,7 @@ const Messages = () => {
 
   const getSenderId = (msg) => msg.senderId?._id || msg.senderId
 
-  const filteredConversations = conversations.filter(c => 
+  const filteredConversations = conversations.filter(c =>
     c.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -216,7 +216,7 @@ const Messages = () => {
             <div className="relative">
               <FiSearch className="absolute left-3 top-2.5 text-gray-400" size={14} />
               <input className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                placeholder="Search conversations..." 
+                placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
@@ -243,42 +243,43 @@ const Messages = () => {
               const u = conv.user;
               const { lastMessage, timestamp, unreadCount, lastMessageStatus, lastMessageSender } = conv;
               return (
-              <button key={u._id}
-                onClick={() => openConversation(u)}
-                className={`w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-left border-b border-gray-50
+                <button key={u._id}
+                  onClick={() => openConversation(u)}
+                  className={`w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-left border-b border-gray-50
                   ${activeUser?._id === u._id ? 'bg-emerald-50 border-l-[3px] border-l-emerald-500' : ''}`}>
-                <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-700 text-sm shrink-0">
-                  {u.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className={`text-sm font-semibold truncate ${activeUser?._id === u._id ? 'text-emerald-700' : 'text-gray-800'}`}>
-                      {u.name}
-                    </p>
-                    <div className="flex items-center gap-2 shrink-0 ml-2">
-                      {unreadCount > 0 && (
-                        <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                          {unreadCount}
-                        </span>
-                      )}
-                      <p className="text-gray-400 text-xs">{formatTime(timestamp)}</p>
-                    </div>
+                  <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-700 text-sm shrink-0">
+                    {u.name?.charAt(0).toUpperCase()}
                   </div>
-                  {typingUsers[u._id] ? (
-                    <p className="text-emerald-500 text-xs mt-0.5 animate-pulse font-medium">Typing...</p>
-                  ) : (
-                    <p className="text-gray-400 text-xs truncate mt-0.5">
-                      {lastMessageStatus && lastMessageSender === user._id && (
-                         <span className="text-emerald-500 font-bold mr-1">
-                           {lastMessageStatus === 'seen' ? '✓✓' : lastMessageStatus === 'delivered' ? '✓✓' : '✓'}
-                         </span>
-                      )}
-                      {lastMessage || 'Start a conversation'}
-                    </p>
-                  )}
-                </div>
-              </button>
-            )})}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className={`text-sm font-semibold truncate ${activeUser?._id === u._id ? 'text-emerald-700' : 'text-gray-800'}`}>
+                        {u.name}
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0 ml-2">
+                        {unreadCount > 0 && (
+                          <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                            {unreadCount}
+                          </span>
+                        )}
+                        <p className="text-gray-400 text-xs">{formatTime(timestamp)}</p>
+                      </div>
+                    </div>
+                    {typingUsers[u._id] ? (
+                      <p className="text-emerald-500 text-xs mt-0.5 animate-pulse font-medium">Typing...</p>
+                    ) : (
+                      <p className="text-gray-400 text-xs truncate mt-0.5">
+                        {lastMessageStatus && lastMessageSender === user._id && (
+                          <span className="text-emerald-500 font-bold mr-1">
+                            {lastMessageStatus === 'seen' ? '✓✓' : lastMessageStatus === 'delivered' ? '✓✓' : '✓'}
+                          </span>
+                        )}
+                        {lastMessage || 'Start a conversation'}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -327,7 +328,7 @@ const Messages = () => {
                   <>
                     {messages.map((msg, i) => {
                       const isMine = getSenderId(msg) === user._id
-                      const showDate = i === 0 || new Date(messages[i-1].timestamp || messages[i-1].createdAt).toDateString() !== new Date(msg.timestamp || msg.createdAt).toDateString()
+                      const showDate = i === 0 || new Date(messages[i - 1].timestamp || messages[i - 1].createdAt).toDateString() !== new Date(msg.timestamp || msg.createdAt).toDateString()
                       return (
                         <div key={msg._id || `msg-${i}`}>
                           {showDate && (

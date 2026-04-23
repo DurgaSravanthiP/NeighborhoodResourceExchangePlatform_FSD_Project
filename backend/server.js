@@ -39,6 +39,7 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Serve React frontend in production
 if (process.env.NODE_ENV === 'production') {
@@ -78,18 +79,18 @@ io.on('connection', (socket) => {
       await Message.findByIdAndUpdate(messageId, { status: 'delivered' });
       const senderSocket = onlineUsers.get(senderId);
       if (senderSocket) io.to(senderSocket).emit('messageStatus', { messageId, status: 'delivered' });
-    } catch (err) {}
+    } catch (err) { }
   });
 
   socket.on('markSeen', async ({ senderId, receiverId }) => {
     try {
       await Message.updateMany(
-        { senderId, receiverId, status: { $ne: 'seen' } }, 
+        { senderId, receiverId, status: { $ne: 'seen' } },
         { status: 'seen' }
       );
       const senderSocket = onlineUsers.get(senderId);
       if (senderSocket) io.to(senderSocket).emit('messagesSeen', { receiverId });
-    } catch (err) {}
+    } catch (err) { }
   });
 
   socket.on('disconnect', () => {

@@ -4,7 +4,7 @@ import { connectSocket, disconnectSocket } from '../services/socket'
 
 const AuthContext = createContext(null)
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -53,4 +53,5 @@ export const AuthProvider = ({ children }) => {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+const useAuth = () => useContext(AuthContext)
+export { AuthProvider, useAuth }

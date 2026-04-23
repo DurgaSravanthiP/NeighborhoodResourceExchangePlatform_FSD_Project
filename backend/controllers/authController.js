@@ -19,6 +19,7 @@ const register = async (req, res) => {
     res.status(201).json({
       _id: user._id, name: user.name, email: user.email,
       location: user.location, profileImage: user.profileImage,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -35,6 +36,7 @@ const login = async (req, res) => {
       res.json({
         _id: user._id, name: user.name, email: user.email,
         location: user.location, profileImage: user.profileImage,
+        role: user.role,
         token: generateToken(user._id),
       });
     } else {
@@ -66,6 +68,7 @@ const updateProfile = async (req, res) => {
     res.json({
       _id: updated._id, name: updated.name, email: updated.email,
       location: updated.location, bio: updated.bio, profileImage: updated.profileImage,
+      role: updated.role,
       token: generateToken(updated._id),
     });
   } catch (error) {

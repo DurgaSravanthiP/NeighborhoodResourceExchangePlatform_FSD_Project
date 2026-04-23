@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { FiHome, FiGrid, FiPlus, FiMessageSquare, FiUser, FiLogOut, FiBell, FiPackage, FiMenu, FiX } from 'react-icons/fi'
-import { useState } from 'react'
+import { FiHome, FiGrid, FiPlus, FiMessageSquare, FiUser, FiLogOut, FiBell, FiPackage, FiMenu, FiX, FiShield } from 'react-icons/fi'
+import { useState, useMemo } from 'react'
 import NotificationBell from './NotificationBell'
 
 const Navbar = () => {
@@ -9,15 +9,21 @@ const Navbar = () => {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const navLinks = [
-    { to: '/dashboard', icon: <FiHome size={16} />, label: 'Home' },
-    { to: '/browse', icon: <FiGrid size={16} />, label: 'Browse' },
-    { to: '/add-item', icon: <FiPlus size={16} />, label: 'List Item' },
-    { to: '/my-items', icon: <FiPackage size={16} />, label: 'My Items' },
-    { to: '/requests', icon: <FiBell size={16} />, label: 'Requests' },
-    { to: '/messages', icon: <FiMessageSquare size={16} />, label: 'Messages' },
-    { to: '/profile', icon: <FiUser size={16} />, label: 'Profile' },
-  ]
+  const navLinks = useMemo(() => {
+    const links = [
+      { to: '/dashboard', icon: <FiHome size={16} />, label: 'Home' },
+      { to: '/browse', icon: <FiGrid size={16} />, label: 'Browse' },
+      { to: '/add-item', icon: <FiPlus size={16} />, label: 'List Item' },
+      { to: '/my-items', icon: <FiPackage size={16} />, label: 'My Items' },
+      { to: '/requests', icon: <FiBell size={16} />, label: 'Requests' },
+      { to: '/messages', icon: <FiMessageSquare size={16} />, label: 'Messages' },
+      { to: '/profile', icon: <FiUser size={16} />, label: 'Profile' },
+    ]
+    if (user?.role === 'admin') {
+      links.push({ to: '/admin', icon: <FiShield size={16} />, label: 'Admin' })
+    }
+    return links
+  }, [user])
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
 

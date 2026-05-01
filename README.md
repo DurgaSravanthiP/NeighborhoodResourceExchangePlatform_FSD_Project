@@ -1,4 +1,4 @@
-# 🏘️ NeighbourShare — Neighborhood Resource Exchange Platform
+# 🏘️ Neighborhood Resource Exchange Platform
 
 A full-stack MERN application where community members can **lend and borrow** everyday items with real-time chat, read receipts, typing indicators, and smart notifications.
 

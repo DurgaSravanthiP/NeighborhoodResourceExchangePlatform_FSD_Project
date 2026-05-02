@@ -2,6 +2,13 @@
 
 A full-stack MERN application where community members can **lend and borrow** everyday items with real-time chat, read receipts, typing indicators, and smart notifications.
 
+---
+## 🎥 Project Videos
+
+- 🎬 **Code Explanation Video:** https://drive.google.com/file/d/1H-ga7xQ0hl-nz7jGS2aZDtOUJfjH8sot/view?usp=drive_link   
+- 📊 **Project Overview Video:** https://drive.google.com/your-project-overview-link
+  
+---
 🌐 **Live Demo:** [https://neighborhood-resource-exchange-platform.onrender.com](https://neighborhood-resource-exchange-platform.onrender.com)
 
 ---

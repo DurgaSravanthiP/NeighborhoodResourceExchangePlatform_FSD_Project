@@ -7,7 +7,7 @@ A full-stack MERN application where community members can **lend and borrow** ev
 
 - 🎬 **Code Explanation Video:** https://drive.google.com/file/d/1H-ga7xQ0hl-nz7jGS2aZDtOUJfjH8sot/view?usp=drive_link
      
-- 📊 **Project Overview Video:** https://drive.google.com/file/d/1-8rAp6MqpUXFRO6XDQY1YO7JkXOs3T0b/view?usp=sharing
+- 📊 **Project Overview Video:** https://drive.google.com/file/d/1xpaLNYPioy6-QQ-ynmbPmoBtJ9UyOv4Q/view?usp=sharing 
   
 ---
 🌐 **Live Demo:** [https://neighborhood-resource-exchange-platform.onrender.com](https://neighborhood-resource-exchange-platform.onrender.com)
